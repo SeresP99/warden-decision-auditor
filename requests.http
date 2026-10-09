@@ -1,0 +1,8 @@
+### health
+GET http://localhost:8000/health
+
+### login attempt
+POST http://localhost:8000/events
+Content-Type: application/json
+
+< examples/login_attempt.json
