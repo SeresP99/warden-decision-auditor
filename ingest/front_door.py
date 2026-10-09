@@ -2,8 +2,6 @@ from flask import Flask, request, jsonify
 import requests
 import secrets
 
-from audit import auditor
-
 app = Flask(__name__)
 
 
@@ -20,23 +18,43 @@ def events():
 
     request_id = 'req_' + secrets.token_hex(4)
 
-    judge_resp = requests.post(
-        'http://localhost:8001/decide',
-        json=data,
-        timeout=2)
-    decision = judge_resp.json()
+    try:
+        judge_resp = requests.post(
+            'http://localhost:8001/decide',
+            json=data,
+            timeout=2)
+        decision = judge_resp.json()
+        if judge_resp.status_code != 200:
+            raise requests.RequestException("bad status")
+        decision = judge_resp.json()
 
-    auditor_resp = requests.post(
-        "http://localhost:8002/log",
-        json={
-            "request_id": request_id,
-            "event_type": data.get("type"),
-            "decision": decision.get("decision"),
-            "rule_id": decision.get("rule_id"),
-            "reason": decision.get("reason"),
-        },
-        timeout=2,
-    )
+    except requests.exceptions.Timeout:
+        return jsonify({
+            'error': 'judge_timeout',
+            request_id: request_id,
+        }), 503
+
+    try:
+        auditor_resp = requests.post(
+            "http://localhost:8002/log",
+            json={
+                "request_id": request_id,
+                "event_type": data.get("type"),
+                "decision": decision.get("decision"),
+                "rule_id": decision.get("rule_id"),
+                "reason": decision.get("reason"),
+            },
+            timeout=2,
+        )
+        if auditor_resp.status_code != 201:
+            raise requests.RequestException("bad status")
+    except requests.exceptions.Timeout:
+        return jsonify({
+            'error': 'log_timeout',
+            'request_id': request_id
+        }), 503
+    
+
 
     return jsonify({'request_id': request_id, 'status': decision})
 
