@@ -1,0 +1,6 @@
+{
+  "type": "admin_action",
+  "account": "ada",
+  "role": "user",
+  "action": "delete_user"
+}
