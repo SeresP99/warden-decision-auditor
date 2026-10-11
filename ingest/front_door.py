@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 import requests
 import secrets
 
+from ingest.upstream import post_json
+
 app = Flask(__name__)
 
 
@@ -18,25 +20,12 @@ def events():
 
     request_id = 'req_' + secrets.token_hex(4)
 
-    try:
-        judge_resp = requests.post(
-            'http://localhost:8001/decide',
-            json=data,
-            timeout=2)
-        if judge_resp.status_code != 200:
-            raise requests.RequestException()
-        decision = judge_resp.json()
-        
-    except requests.exceptions.JSONDecodeError as e:
-        return jsonify({
-            'error': str(e),
-            'request_id': request_id
-        }), 500
-    except requests.RequestException as e:
-        return jsonify({
-            'error': str(e),
-            'request_id': request_id,
-        }), 503
+
+    judge_resp = post_json('http://localhost:8001/decide', data, request_id)
+    if judge_resp.error is not None:
+        return jsonify({'error': judge_resp.error.message}), judge_resp.error.code
+    else:
+        decision = judge_resp.json
 
     try:
         auditor_resp = requests.post(
