@@ -23,7 +23,6 @@ def events():
             'http://localhost:8001/decide',
             json=data,
             timeout=2)
-        decision = judge_resp.json()
         if judge_resp.status_code != 200:
             raise requests.RequestException("bad status")
         decision = judge_resp.json()
