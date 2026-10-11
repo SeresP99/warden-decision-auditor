@@ -24,13 +24,18 @@ def events():
             json=data,
             timeout=2)
         if judge_resp.status_code != 200:
-            raise requests.RequestException("bad status")
+            raise requests.RequestException()
         decision = judge_resp.json()
-
-    except requests.exceptions.Timeout:
+        
+    except requests.exceptions.JSONDecodeError as e:
         return jsonify({
-            'error': 'judge_timeout',
-            request_id: request_id,
+            'error': str(e),
+            'request_id': request_id
+        }), 500
+    except requests.RequestException as e:
+        return jsonify({
+            'error': str(e),
+            'request_id': request_id,
         }), 503
 
     try:
@@ -46,12 +51,18 @@ def events():
             timeout=2,
         )
         if auditor_resp.status_code != 201:
-            raise requests.RequestException("bad status")
-    except requests.exceptions.Timeout:
+            raise requests.RequestException()
+    except requests.exceptions.JSONDecodeError as e:
         return jsonify({
-            'error': 'log_timeout',
+            'error': str(e),
+            'request_id': request_id
+        }), 500
+    except requests.RequestException as e:
+        return jsonify({
+            'error': str(e),
             'request_id': request_id
         }), 503
+
     
 
 
