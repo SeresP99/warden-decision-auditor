@@ -23,7 +23,7 @@ def events():
 
     judge_resp = post_json('http://localhost:8001/decide', data, request_id)
     if judge_resp.error is not None:
-        return jsonify({'error': judge_resp.error.message}), judge_resp.error.code
+        return jsonify({'error': judge_resp.error.get('message')}), judge_resp.error.get('code')
     else:
         decision = judge_resp.json
 
@@ -39,7 +39,7 @@ def events():
         request_id
     )
     if auditor_resp.error is not None:
-        return jsonify({'error': auditor_resp.error.message}), auditor_resp.error.code
+        return jsonify({'error': auditor_resp.error.get('message')}), auditor_resp.error.get('code')
 
     return jsonify({'request_id': request_id, 'status': decision})
 
