@@ -27,33 +27,19 @@ def events():
     else:
         decision = judge_resp.json
 
-    try:
-        auditor_resp = requests.post(
-            "http://localhost:8002/log",
-            json={
-                "request_id": request_id,
-                "event_type": data.get("type"),
-                "decision": decision.get("decision"),
-                "rule_id": decision.get("rule_id"),
-                "reason": decision.get("reason"),
-            },
-            timeout=2,
-        )
-        if auditor_resp.status_code != 201:
-            raise requests.RequestException()
-    except requests.exceptions.JSONDecodeError as e:
-        return jsonify({
-            'error': str(e),
-            'request_id': request_id
-        }), 500
-    except requests.RequestException as e:
-        return jsonify({
-            'error': str(e),
-            'request_id': request_id
-        }), 503
 
-    
-
+    auditor_resp = post_json("http://localhost:8002/log",
+        {
+            "request_id": request_id,
+            "event_type": data.get("type"),
+            "decision": decision.get("decision"),
+            "rule_id": decision.get("rule_id"),
+            "reason": decision.get("reason"),
+        },
+        request_id
+    )
+    if auditor_resp.error is not None:
+        return jsonify({'error': auditor_resp.error.message}), auditor_resp.error.code
 
     return jsonify({'request_id': request_id, 'status': decision})
 
