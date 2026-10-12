@@ -36,8 +36,10 @@ def events():
             "rule_id": decision.get("rule_id"),
             "reason": decision.get("reason"),
         },
-        request_id
+        request_id,
+        201
     )
+
     if auditor_resp.error is not None:
         return jsonify({'error': auditor_resp.error.get('message')}), auditor_resp.error.get('code')
 
