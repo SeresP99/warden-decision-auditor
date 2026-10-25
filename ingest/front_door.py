@@ -21,7 +21,7 @@ def events():
     request_id = 'req_' + secrets.token_hex(4)
 
 
-    judge_resp = post_json('http://localhost:8001/decide', data, request_id)
+    judge_resp = post_json('http://localhost:8001/decide', data, request_id, timeout=5)
     if judge_resp.error is not None:
         return jsonify({'error': judge_resp.error.get('message')}), judge_resp.error.get('code')
     else:
