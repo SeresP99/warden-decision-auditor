@@ -1,15 +1,44 @@
-from flask import Flask, jsonify
+import datetime
+from collections import defaultdict
+
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
+
+failure_store = defaultdict(list)
+
+
+def check_login_attempt(event):
+    account = event['account']
+    failure_store[account].append(datetime.datetime.now())
+
+
+def check_admin_action(event):
+    return 0
+
+
+def check_url(event):
+    return 0
 
 
 @app.get("/health")
 def health():
     return jsonify({'status': 'ok'})
 
-@app.get("/decide")
+
+@app.post("/decide")
 def decide():
-     return jsonify({"decision": "allow/deny", "rule_id": "1", "reason": "..."})
+    event = request.get_json(silent=True) or {}
+    event_type = event.get('type')
+
+    match event_type:
+        case 'login_attempt':
+            check_login_attempt(event)
+        case _:
+            return jsonify({'decision': 'deny', 'reason': 'Invalid Request', "rule_id": "invalid request"})
+
+    return jsonify({"decision": "allow", "rule_id": "1", "reason": "..."})
+
 
 if __name__ == "__main__":
-     app.run(port=8003)
+    app.run(port=8003)
