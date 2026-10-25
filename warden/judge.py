@@ -10,7 +10,17 @@ failure_store = defaultdict(list)
 
 def check_login_attempt(event):
     account = event['account']
-    failure_store[account].append(datetime.datetime.now())
+    success = event['success']
+    login_attempt = {"datetime": datetime.datetime.now(), "success": success}
+    failure_store[account].append(login_attempt)
+
+    if len(failure_store[account]) > 5:
+        return "deny"
+
+    elif success:
+        failure_store[account].clear()
+
+    return "allow"
 
 
 def check_admin_action(event):
