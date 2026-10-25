@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 
 from flask import Flask, jsonify, request
@@ -6,18 +6,27 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 failure_store = defaultdict(list)
+WINDOW = timedelta(minutes=10)
 
 
 def check_login_attempt(event):
+    now = datetime.now(timezone.utc)
+    cutoff = now - WINDOW
+
     account = event['account']
     success = event['success']
-    login_attempt = {"datetime": datetime.datetime.now(), "success": success}
-    failure_store[account].append(login_attempt)
+    failed_login_attempt_time = {"datetime": now}
 
-    if len(failure_store[account]) > 5:
-        return "deny"
+    if success is False:
+        failure_store[account].append(failed_login_attempt_time)
+        recent = [
+            attempt for attempt in failure_store[account]
+            if attempt["datetime"] < cutoff
+        ]
+        if len(recent) > 5:
+            return "deny"
 
-    elif success:
+    else:
         failure_store[account].clear()
 
     return "allow"
