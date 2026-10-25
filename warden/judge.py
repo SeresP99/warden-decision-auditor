@@ -14,7 +14,7 @@ def check_login_attempt(event):
     cutoff = now - WINDOW
 
     account = event['account']
-    success = event['success']
+    success = event.get('success')
     failed_login_attempt_time = {"datetime": now}
 
     if success is False:
@@ -23,8 +23,8 @@ def check_login_attempt(event):
             attempt for attempt in failure_store[account]
             if attempt["datetime"] > cutoff
         ]
-        if len(recent) > 5:
-            return {"decision": "deny", "reason": "Too many failed attempts", "rule_id": "1"}
+        if len(recent) >= 5:
+            return {"decision": "deny", "reason": f"{len(recent)} failures in 10 minutes", "rule_id": "too_many_failures"}
 
     else:
         failure_store[account].clear()
