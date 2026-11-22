@@ -10,6 +10,12 @@ Three kinds only. Extra fields are dropped and not stored.
 
 Internal environment variable gets passed for each module endpoint call. Name of header: X-Internal-Key
 
+Gets checked during requests from front door to judge and front door to log book.
+
+Name of environment variable: **WARDEN_INTERNAL_KEY**.
+
+Missing or incorrect key produces error code **401**.
+
 ### login_attempt
 ```json
 {
