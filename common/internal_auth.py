@@ -1,0 +1,1 @@
+INTERNAL_KEY_HEADER = "X-Internal-Key"

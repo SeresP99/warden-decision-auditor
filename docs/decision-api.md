@@ -6,6 +6,10 @@ The contract both (stub and real) judges must match. The front door depends on t
 
 Three kinds only. Extra fields are dropped and not stored.
 
+## Internal Authentication
+
+Internal environment variable gets passed for each module endpoint call. Name of header: X-Internal-Key
+
 ### login_attempt
 ```json
 {
