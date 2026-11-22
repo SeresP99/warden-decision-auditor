@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from flask import Flask, jsonify, request
 
-from common.internal_auth import INTERNAL_KEY_HEADER
+from common.internal_auth import INTERNAL_KEY_HEADER, INTERNAL_KEY
 
 app = Flask(__name__)
 
@@ -56,7 +56,7 @@ def check_internal_key():
         return None
 
     received_key = request.headers.get(INTERNAL_KEY_HEADER, "")
-    if not hmac.compare_digest(received_key or "", INTERNAL_KEY_HEADER):
+    if not hmac.compare_digest(received_key or "", INTERNAL_KEY):
         return jsonify({'decision': 'deny', 'reason': 'Invalid Request', "rule_id": "invalid internal key"})
 
     return None
