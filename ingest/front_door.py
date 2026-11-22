@@ -2,9 +2,11 @@ from flask import Flask, request, jsonify
 import requests
 import secrets
 
+from common.internal_auth import INTERNAL_KEY, INTERNAL_KEY_HEADER
 from ingest.upstream import post_json
 
 app = Flask(__name__)
+headers = {INTERNAL_KEY_HEADER: INTERNAL_KEY}
 
 
 @app.get('/health')
@@ -20,25 +22,24 @@ def events():
 
     request_id = 'req_' + secrets.token_hex(4)
 
-
-    judge_resp = post_json('http://localhost:8001/decide', data, request_id, timeout=5)
+    judge_resp = post_json('http://localhost:8001/decide', data, request_id, timeout=5, headers=headers)
     if judge_resp.error is not None:
         return jsonify({'error': judge_resp.error.get('message')}), judge_resp.error.get('code')
     else:
         decision = judge_resp.json
 
-
     auditor_resp = post_json("http://localhost:8002/log",
-        {
-            "request_id": request_id,
-            "event_type": data.get("type"),
-            "decision": decision.get("decision"),
-            "rule_id": decision.get("rule_id"),
-            "reason": decision.get("reason"),
-        },
-        request_id,
-        201
-    )
+                             {
+                                 "request_id": request_id,
+                                 "event_type": data.get("type"),
+                                 "decision": decision.get("decision"),
+                                 "rule_id": decision.get("rule_id"),
+                                 "reason": decision.get("reason"),
+                             },
+                             request_id,
+                             201,
+                             headers=headers
+                             )
 
     if auditor_resp.error is not None:
         return jsonify({'error': auditor_resp.error.get('message')}), auditor_resp.error.get('code')
