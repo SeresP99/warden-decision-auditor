@@ -1,12 +1,16 @@
+import hmac
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 
 from flask import Flask, jsonify, request
 
+from common.internal_auth import INTERNAL_KEY_HEADER
+
 app = Flask(__name__)
 
 failure_store = defaultdict(list)
 WINDOW = timedelta(minutes=10)
+
 
 # Rule ID: 1
 def check_login_attempt(event):
@@ -24,7 +28,8 @@ def check_login_attempt(event):
             if attempt["datetime"] > cutoff
         ]
         if len(recent) >= 5:
-            return {"decision": "deny", "reason": f"{len(recent)} failures in 10 minutes", "rule_id": "too_many_failures"}
+            return {"decision": "deny", "reason": f"{len(recent)} failures in 10 minutes",
+                    "rule_id": "too_many_failures"}
 
     else:
         failure_store[account].clear()
@@ -43,6 +48,18 @@ def check_url(event):
 @app.get("/health")
 def health():
     return jsonify({'status': 'ok'})
+
+
+@app.before_request
+def check_internal_key():
+    if request.path == "/health":
+        return None
+
+    received_key = request.headers.get(INTERNAL_KEY_HEADER, "")
+    if not hmac.compare_digest(received_key or "", INTERNAL_KEY_HEADER):
+        return jsonify({'decision': 'deny', 'reason': 'Invalid Request', "rule_id": "invalid internal key"})
+
+    return None
 
 
 @app.post("/decide")
