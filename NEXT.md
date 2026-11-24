@@ -1,15 +1,16 @@
 # NEXT
 
-## Done (2026-11-22)
-- Shared header name in common/internal_auth.py (X-Internal-Key)
-- Key loaded from .env via python-dotenv; exits if WARDEN_INTERNAL_KEY is missing
-- .env.example added, .env ignored
-- decision-api.md documents the header, env var and 401
-- Judge: before_request checks the key (skips /health)
+## Done (2026-11-24)
+- Judge returns 401 on a missing or wrong internal key
+- Stub judge checks the incoming key (401 if bad) and forwards it to the real judge
+- Stub passes the real judge's status code through; 503 when the judge is down, times out, or sends bad JSON
+- Judge returns 400 with rule_id invalid_event for unknown event types
+- Tested with curl: no key -> 401, wrong key -> 401, right key -> judge answers
+- Integration test: login_attempt via front door (8000) -> stub -> judge -> allow
 
 ## Next
-1. Commit the judge check, then run all three and confirm a request without the key gets 401.
-2. Front door: pass {INTERNAL_KEY_HEADER: INTERNAL_KEY} to both post_json calls (if not done).
-3. Stub judge: forward the key when it calls the real judge.
-4. Log book: check the key too.
-5. Docs: reword the first internal-auth line; mention the stub-to-judge hop.
+1. Check the key before request.get_json() in the stub, so a keyless bad body gets 401, not 400
+2. Log book: check the internal key too
+3. Docs: reword the first internal-auth line; mention the stub-to-judge hop, 400s and 503s
+4. Add pytest tests for no key / wrong key / right key (replace manual curl)
+5. Keep test events in files and send with curl -d @event.json
