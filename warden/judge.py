@@ -70,7 +70,7 @@ def decide():
         case 'login_attempt':
             reply = check_login_attempt(event)
         case _:
-            return jsonify({'decision': 'deny', 'reason': 'Invalid Request', "rule_id": "invalid request"})
+            return jsonify({'decision': 'deny', 'reason': 'Not a valid event', "rule_id": "invalid_event"}), 400
 
     return jsonify(reply)
 
