@@ -57,7 +57,7 @@ def check_internal_key():
 
     received_key = request.headers.get(INTERNAL_KEY_HEADER, "")
     if not hmac.compare_digest(received_key or "", INTERNAL_KEY):
-        return jsonify({'decision': 'deny', 'reason': 'Invalid Request', "rule_id": "invalid internal key"})
+        return jsonify({'decision': 'deny', 'reason': 'Invalid Request', "rule_id": "invalid internal key"}), 401
 
     return None
 
