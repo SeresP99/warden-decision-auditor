@@ -3,7 +3,7 @@ from collections import defaultdict
 
 from flask import Flask, jsonify, request
 
-from common.internal_auth import INTERNAL_KEY_HEADER, INTERNAL_KEY, internal_key_correct
+from common.internal_auth import internal_key_correct
 
 app = Flask(__name__)
 

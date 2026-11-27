@@ -1,6 +1,6 @@
 import requests
 from flask import Flask, request, jsonify
-from common.internal_auth import INTERNAL_KEY, INTERNAL_KEY_HEADER, internal_key_correct
+from common.internal_auth import INTERNAL_KEY_HEADER, internal_key_correct
 
 app = Flask(__name__)
 
