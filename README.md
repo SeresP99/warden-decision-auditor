@@ -36,7 +36,7 @@ caller, or you, reading it back
 
 `ingest/` — front door (only public port)  
 `warden/` — real judge  
-`warden-stub/` — stub judge  
+`warden_stub` — stub judge  
 `audit/` — log book  
 `examples/` — sample events  
 `docs/decision-api.md` — the contract both judges must match  
