@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from flask import Flask, jsonify, request
 
-from common.internal_auth import INTERNAL_KEY_HEADER, INTERNAL_KEY
+from common.internal_auth import INTERNAL_KEY_HEADER, INTERNAL_KEY, internal_key_correct
 
 app = Flask(__name__)
 
@@ -52,14 +52,10 @@ def health():
 
 @app.before_request
 def check_internal_key():
-    if request.path == "/health":
+    if internal_key_correct(request.headers.get(INTERNAL_KEY_HEADER)):
         return None
-
-    received_key = request.headers.get(INTERNAL_KEY_HEADER, "")
-    if not hmac.compare_digest(received_key or "", INTERNAL_KEY):
+    else:
         return jsonify({'decision': 'deny', 'reason': 'invalid_request', "rule_id": "invalid_internal_key"}), 401
-
-    return None
 
 
 @app.post("/decide")

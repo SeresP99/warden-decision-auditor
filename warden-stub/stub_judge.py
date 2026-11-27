@@ -2,7 +2,7 @@ import hmac
 
 import requests
 from flask import Flask, request, jsonify
-from common.internal_auth import INTERNAL_KEY, INTERNAL_KEY_HEADER
+from common.internal_auth import INTERNAL_KEY, INTERNAL_KEY_HEADER, internal_key_correct
 
 app = Flask(__name__)
 
@@ -11,6 +11,13 @@ app = Flask(__name__)
 def health():
     return jsonify({'status': 'ok'})
 
+
+@app.before_request
+def check_internal_key():
+    if internal_key_correct(request.headers.get(INTERNAL_KEY_HEADER)):
+        return None
+    else:
+        return jsonify({'decision': 'deny', 'reason': 'invalid_internal_key'}), 401
 
 @app.post('/decide')
 def decide():
