@@ -1,16 +1,16 @@
 # NEXT
 
-## Done (2026-11-24)
-- Judge returns 401 on a missing or wrong internal key
-- Stub judge checks the incoming key (401 if bad) and forwards it to the real judge
-- Stub passes the real judge's status code through; 503 when the judge is down, times out, or sends bad JSON
-- Judge returns 400 with rule_id invalid_event for unknown event types
-- Tested with curl: no key -> 401, wrong key -> 401, right key -> judge answers
-- Integration test: login_attempt via front door (8000) -> stub -> judge -> allow
+## Done (2026-11-27)
+- Shared internal key check (internal_key_correct) in common/internal_auth.py, used as a before_request hook in judge and stub
+- Stub now checks the key before reading the body; old inline check removed
+- Renamed warden-stub to warden_stub so it can be imported
+- Added examples/login_allow.json
+- Pytest auth tests for judge and stub (no key, wrong key, right key) using Flask's test client
+- Curl check: front door end-to-end allow, stub/judge 401 without key, health 200
 
 ## Next
-1. Check the key before request.get_json() in the stub, so a keyless bad body gets 401, not 400
-2. Log book: check the internal key too
-3. Docs: reword the first internal-auth line; mention the stub-to-judge hop, 400s and 503s
-4. Add pytest tests for no key / wrong key / right key (replace manual curl)
-5. Keep test events in files and send with curl -d @event.json
+1. Stub right-key test: fake the forward to the judge with unittest.mock.patch so it runs without the judge up
+2. Log book: check the internal key (not on /health), plus pytest tests
+3. Front door: pass the judge's 400/401 through instead of turning them into 503
+4. Fix the old tests so pytest runs in one go (PYTHONPATH=. and no live-server dependence)
+5. Docs: reword the internal-auth line; mention the stub-to-judge hop, 400s and 503s
