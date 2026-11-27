@@ -1,5 +1,3 @@
-import hmac
-
 import requests
 from flask import Flask, request, jsonify
 from common.internal_auth import INTERNAL_KEY, INTERNAL_KEY_HEADER, internal_key_correct
@@ -14,10 +12,10 @@ def health():
 
 @app.before_request
 def check_internal_key():
-    if internal_key_correct(request.headers.get(INTERNAL_KEY_HEADER)):
+    if internal_key_correct(request):
         return None
     else:
-        return jsonify({'decision': 'deny', 'reason': 'invalid_internal_key'}), 401
+        return jsonify({'decision': 'deny', 'reason': 'invalid_request', "rule_id": "invalid_internal_key"}), 401
 
 @app.post('/decide')
 def decide():
@@ -25,8 +23,6 @@ def decide():
         payload = request.get_json()
         received_key = request.headers.get(INTERNAL_KEY_HEADER)
         headers = {INTERNAL_KEY_HEADER: received_key}
-        if not hmac.compare_digest(received_key or "", INTERNAL_KEY):
-            return jsonify({'decision': 'deny', 'reason': 'invalid_request', "rule_id": "invalid_internal_key"}), 401
         real_judge_request = requests.post('http://localhost:8003/decide', json=payload, headers=headers, timeout=5)
         return jsonify(real_judge_request.json()), real_judge_request.status_code
 

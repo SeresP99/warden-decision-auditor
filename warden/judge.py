@@ -1,4 +1,3 @@
-import hmac
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 
@@ -52,7 +51,7 @@ def health():
 
 @app.before_request
 def check_internal_key():
-    if internal_key_correct(request.headers.get(INTERNAL_KEY_HEADER)):
+    if internal_key_correct(request):
         return None
     else:
         return jsonify({'decision': 'deny', 'reason': 'invalid_request', "rule_id": "invalid_internal_key"}), 401
